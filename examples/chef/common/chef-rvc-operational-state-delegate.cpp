@@ -18,7 +18,7 @@
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/util/config.h>
 
-#ifdef ZCL_USING_OPERATIONAL_STATE_RVC_CLUSTER_SERVER
+#ifdef EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 #include <chef-rvc-operational-state-delegate.h>
 
 using namespace chip;
@@ -37,13 +37,14 @@ CHIP_ERROR GenericOperationalStateDelegateImpl::GetOperationalStateAtIndex(size_
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR GenericOperationalStateDelegateImpl::GetOperationalPhaseAtIndex(size_t index, MutableCharSpan & operationalPhase)
+CHIP_ERROR GenericOperationalStateDelegateImpl::GetOperationalPhaseAtIndex(size_t index, GenericOperationalPhase & operationalPhase)
 {
     if (index >= mOperationalPhaseList.size())
     {
         return CHIP_ERROR_NOT_FOUND;
     }
-    return CopyCharSpanToMutableCharSpan(mOperationalPhaseList[index], operationalPhase);
+    operationalPhase = mOperationalPhaseList[index];
+    return CHIP_NO_ERROR;
 }
 
 void GenericOperationalStateDelegateImpl::HandlePauseStateCallback(GenericOperationalError & err)
@@ -128,7 +129,7 @@ void emberAfOperationalStateClusterInitCallback(chip::EndpointId endpointId)
 
     gOperationalStateDelegate           = new OperationalStateDelegate;
     EndpointId operationalStateEndpoint = 0x01;
-    gOperationalStateInstance           = new OperationalState::Instance(gOperationalStateDelegate, operationalStateEndpoint);
+    gOperationalStateInstance = new Instance(gOperationalStateDelegate, operationalStateEndpoint, Clusters::OperationalState::Id);
 
     gOperationalStateInstance->SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kStopped));
 
@@ -137,8 +138,8 @@ void emberAfOperationalStateClusterInitCallback(chip::EndpointId endpointId)
 
 // Init RVC Operational State cluster
 
-static RvcOperationalState::Instance * gRvcOperationalStateInstance = nullptr;
-static RvcOperationalStateDelegate * gRvcOperationalStateDelegate   = nullptr;
+static OperationalState::Instance * gRvcOperationalStateInstance  = nullptr;
+static RvcOperationalStateDelegate * gRvcOperationalStateDelegate = nullptr;
 
 void RvcOperationalState::Shutdown()
 {
@@ -154,6 +155,59 @@ void RvcOperationalState::Shutdown()
     }
 }
 
+EmberAfStatus chefRvcOperationalStateWriteCallback(chip::EndpointId endpointId, chip::ClusterId clusterId,
+                                                   const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
+{
+    EmberAfStatus ret = EMBER_ZCL_STATUS_SUCCESS;
+
+    VerifyOrDie(endpointId == 1); // this cluster is only enabled for endpoint 1.
+    VerifyOrDie(gRvcOperationalStateInstance != nullptr);
+
+    chip::AttributeId attributeId = attributeMetadata->attributeId;
+
+    switch (attributeId)
+    {
+    case chip::app::Clusters::RvcOperationalState::Attributes::CurrentPhase::Id: {
+        uint8_t m = static_cast<uint8_t>(buffer[0]);
+        DataModel::Nullable<uint8_t> aPhase(m);
+        CHIP_ERROR err = gRvcOperationalStateInstance->SetCurrentPhase(aPhase);
+        if (CHIP_NO_ERROR == err)
+        {
+            break;
+        }
+        ret = EMBER_ZCL_STATUS_UNSUPPORTED_WRITE;
+        ChipLogError(DeviceLayer, "Invalid Attribute Update status: %" CHIP_ERROR_FORMAT, err.Format());
+    }
+    break;
+    case chip::app::Clusters::RvcOperationalState::Attributes::OperationalState::Id: {
+        uint8_t m      = static_cast<uint8_t>(buffer[0]);
+        CHIP_ERROR err = gRvcOperationalStateInstance->SetOperationalState(m);
+        if (CHIP_NO_ERROR == err)
+        {
+            break;
+        }
+        ret = EMBER_ZCL_STATUS_UNSUPPORTED_WRITE;
+        ChipLogError(DeviceLayer, "Invalid Attribute Update status: %" CHIP_ERROR_FORMAT, err.Format());
+    }
+    break;
+    default:
+        ret = EMBER_ZCL_STATUS_UNSUPPORTED_ATTRIBUTE;
+        ChipLogError(DeviceLayer, "Unsupported Attribute ID: %d", static_cast<int>(attributeId));
+        break;
+    }
+
+    return ret;
+}
+
+EmberAfStatus chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+                                                  const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
+                                                  uint16_t maxReadLength)
+{
+    EmberAfStatus ret = EMBER_ZCL_STATUS_SUCCESS;
+
+    return ret;
+}
+
 void emberAfRvcOperationalStateClusterInitCallback(chip::EndpointId endpointId)
 {
     VerifyOrDie(endpointId == 1); // this cluster is only enabled for endpoint 1.
@@ -161,10 +215,11 @@ void emberAfRvcOperationalStateClusterInitCallback(chip::EndpointId endpointId)
 
     gRvcOperationalStateDelegate        = new RvcOperationalStateDelegate;
     EndpointId operationalStateEndpoint = 0x01;
-    gRvcOperationalStateInstance        = new RvcOperationalState::Instance(gRvcOperationalStateDelegate, operationalStateEndpoint);
+    gRvcOperationalStateInstance =
+        new Instance(gRvcOperationalStateDelegate, operationalStateEndpoint, Clusters::RvcOperationalState::Id);
 
     gRvcOperationalStateInstance->SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kStopped));
 
     gRvcOperationalStateInstance->Init();
 }
-#endif // MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+#endif // EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
