@@ -23,6 +23,8 @@
 #include <cstring>
 #include <utility>
 
+using chip::Protocols::InteractionModel::Status;
+
 namespace chip {
 namespace app {
 namespace Clusters {
@@ -120,18 +122,20 @@ void Shutdown();
 } // namespace chip
 
 
-#ifdef EMBER_AF_PLUGIN_RVC_RUN_MODE_SERVER
-EmberAfStatus chefRvcRunModeWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+#ifdef MATTER_DM_PLUGIN_RVC_RUN_MODE_SERVER
+     //  chefRvcRunModeWriteCallback
+chip::Protocols::InteractionModel::Status chefRvcRunModeWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                           const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
-EmberAfStatus chefRvcRunModeReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+chip::Protocols::InteractionModel::Status chefRvcRunModeReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                          const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                          uint16_t maxReadLength);
 #endif
 
-#ifdef EMBER_AF_PLUGIN_RVC_CLEAN_MODE_SERVER
-EmberAfStatus chefRvcCleanModeWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+#ifdef MATTER_DM_PLUGIN_RVC_CLEAN_MODE_SERVER
+       //chefRvcRunModeWriteCallback
+chip::Protocols::InteractionModel::Status chefRvcCleanModeWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                           const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
-EmberAfStatus chefRvcCleanModeReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+chip::Protocols::InteractionModel::Status chefRvcCleanModeReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                          const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                          uint16_t maxReadLength);
-#endif // EMBER_AF_PLUGIN_RVC_RUN_MODE_SERVER
+#endif // MATTER_DM_PLUGIN_RVC_RUN_MODE_SERVER

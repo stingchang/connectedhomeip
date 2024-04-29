@@ -19,11 +19,11 @@
 #include "chef-concentration-measurement.h"
 #endif
 
-#if defined(EMBER_AF_PLUGIN_RVC_RUN_MODE_SERVER) ||                                                                              \
-    defined(EMBER_AF_PLUGIN_RVC_CLEAN_MODE_SERVER)
+#if defined(MATTER_DM_PLUGIN_RVC_RUN_MODE_SERVER) ||                                                                              \
+    defined(MATTER_DM_PLUGIN_RVC_CLEAN_MODE_SERVER)
 #include "chef-rvc-mode-delegate.h"
 #endif
-#ifdef EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 #include "chef-rvc-operational-state-delegate.h"
 #endif
 
@@ -113,17 +113,17 @@ Protocols::InteractionModel::Status emberAfExternalAttributeWriteCallback(Endpoi
     case chip::app::Clusters::TotalVolatileOrganicCompoundsConcentrationMeasurement::Id:
         return chefConcentrationMeasurementWriteCallback(endpoint, clusterId, attributeMetadata, buffer);
 #endif
-#ifdef EMBER_AF_PLUGIN_RVC_RUN_MODE_SERVER
+#ifdef MATTER_DM_PLUGIN_RVC_RUN_MODE_SERVER
     case chip::app::Clusters::RvcRunMode::Id:
         return chefRvcRunModeWriteCallback(endpoint, clusterId, attributeMetadata, buffer);
         break;
 #endif
-#ifdef EMBER_AF_PLUGIN_RVC_CLEAN_MODE_SERVER
+#ifdef MATTER_DM_PLUGIN_RVC_CLEAN_MODE_SERVER
     case chip::app::Clusters::RvcCleanMode::Id:
         return chefRvcCleanModeWriteCallback(endpoint, clusterId, attributeMetadata, buffer);
         break;
 #endif
-#ifdef EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
     case chip::app::Clusters::RvcOperationalState::Id:
         return chefRvcOperationalStateWriteCallback(endpoint, clusterId, attributeMetadata, buffer);
         break;

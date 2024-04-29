@@ -1621,9 +1621,8 @@ endpoint 0 {
   }
 }
 endpoint 1 {
-  device type ma_powersource = 17, version 1;
   device type ma_robotic_vacuum_cleaner = 116, version 1;
-
+  device type ma_powersource = 17, version 1;
 
   server cluster Identify {
     ram      attribute identifyTime default = 0x0;
@@ -1737,6 +1736,3 @@ endpoint 1 {
     handle command Resume;
     handle command OperationalCommandResponse;
   }
-}
-
-

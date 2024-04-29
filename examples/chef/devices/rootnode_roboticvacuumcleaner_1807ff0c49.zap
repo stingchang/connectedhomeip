@@ -1877,18 +1877,12 @@
       "id": 2,
       "name": "Anonymous Endpoint Type",
       "deviceTypeRef": {
-        "code": 17,
+        "code": 116,
         "profileId": 259,
-        "label": "MA-powersource",
-        "name": "MA-powersource"
+        "label": "MA-robotic-vacuum-cleaner",
+        "name": "MA-robotic-vacuum-cleaner"
       },
       "deviceTypes": [
-        {
-          "code": 17,
-          "profileId": 259,
-          "label": "MA-powersource",
-          "name": "MA-powersource"
-        },
         {
           "code": 116,
           "profileId": 259,
@@ -1901,11 +1895,11 @@
         1
       ],
       "deviceIdentifiers": [
+        116,
         17,
-        116
       ],
-      "deviceTypeName": "MA-powersource",
-      "deviceTypeCode": 17,
+      "deviceTypeName": "MA-robotic-vacuum-cleaner",
+      "deviceTypeCode": 116,
       "deviceTypeProfileId": 259,
       "clusters": [
         {
@@ -2303,7 +2297,7 @@
               "singleton": 0,
               "bounded": 0,
               "defaultValue": null,
-              "reportable": 0,
+              "reportable": 1,
               "minInterval": 1,
               "maxInterval": 65534,
               "reportableChange": 0
@@ -2319,7 +2313,7 @@
               "singleton": 0,
               "bounded": 0,
               "defaultValue": null,
-              "reportable": 0,
+              "reportable": 1,
               "minInterval": 1,
               "maxInterval": 65534,
               "reportableChange": 0
@@ -2335,7 +2329,7 @@
               "singleton": 0,
               "bounded": 0,
               "defaultValue": null,
-              "reportable": 0,
+              "reportable": 1,
               "minInterval": 1,
               "maxInterval": 65534,
               "reportableChange": 0
@@ -2712,7 +2706,7 @@
               "reportable": 1,
               "minInterval": 1,
               "maxInterval": 65534,
-              "reportableChange": 0
+              "reportableChange": 1
             },
             {
               "name": "GeneratedCommandList",
@@ -2868,7 +2862,7 @@
               "reportable": 1,
               "minInterval": 1,
               "maxInterval": 65534,
-              "reportableChange": 0
+              "reportableChange": 1
             },
             {
               "name": "GeneratedCommandList",

@@ -23,6 +23,8 @@
 
 #include <protocols/interaction_model/StatusCode.h>
 
+using chip::Protocols::InteractionModel::Status;
+
 namespace chip {
 namespace app {
 namespace Clusters {
@@ -30,7 +32,7 @@ namespace Clusters {
 namespace OperationalState {
 
 // This is an application level delegate to handle operational state commands according to the specific business logic.
-class GenericOperationalStateDelegateImpl : public Delegate
+class GenericOperationalStateDelegateImpl : public RvcOperationalState::Delegate
 {
 public:
     /**
@@ -148,10 +150,12 @@ void Shutdown();
 } // namespace chip
 
 
-#ifdef EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
-EmberAfStatus chefRvcOperationalStateWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+chip::Protocols::InteractionModel::Status 
+chefRvcOperationalStateWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                           const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
-EmberAfStatus chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+chip::Protocols::InteractionModel::Status
+ chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                          const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                          uint16_t maxReadLength);
-#endif // EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+#endif // MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER

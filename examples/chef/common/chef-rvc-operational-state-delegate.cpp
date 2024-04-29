@@ -1,5 +1,4 @@
 /*
- *
  *    Copyright (c) 2023 Project CHIP Authors
  *    All rights reserved.
  *
@@ -18,7 +17,7 @@
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/util/config.h>
 
-#ifdef EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 #include <chef-rvc-operational-state-delegate.h>
 
 using namespace chip;
@@ -26,116 +25,7 @@ using namespace chip::app;
 using namespace chip::app::Clusters;
 using namespace chip::app::Clusters::OperationalState;
 using namespace chip::app::Clusters::RvcOperationalState;
-
-CHIP_ERROR GenericOperationalStateDelegateImpl::GetOperationalStateAtIndex(size_t index, GenericOperationalState & operationalState)
-{
-    if (index >= mOperationalStateList.size())
-    {
-        return CHIP_ERROR_NOT_FOUND;
-    }
-    operationalState = mOperationalStateList[index];
-    return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR GenericOperationalStateDelegateImpl::GetOperationalPhaseAtIndex(size_t index, MutableCharSpan & operationalPhase)
-{
-    if (index >= mOperationalPhaseList.size())
-    {
-        return CHIP_ERROR_NOT_FOUND;
-    }
-    return CopyCharSpanToMutableCharSpan(mOperationalPhaseList[index], operationalPhase);
-}
-
-void GenericOperationalStateDelegateImpl::HandlePauseStateCallback(GenericOperationalError & err)
-{
-    // placeholder implementation
-    auto error = GetInstance()->SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kPaused));
-    if (error == CHIP_NO_ERROR)
-    {
-        err.Set(to_underlying(ErrorStateEnum::kNoError));
-    }
-    else
-    {
-        err.Set(to_underlying(ErrorStateEnum::kUnableToCompleteOperation));
-    }
-}
-
-void GenericOperationalStateDelegateImpl::HandleResumeStateCallback(GenericOperationalError & err)
-{
-    // placeholder implementation
-    auto error = GetInstance()->SetOperationalState(to_underlying(OperationalStateEnum::kRunning));
-    if (error == CHIP_NO_ERROR)
-    {
-        err.Set(to_underlying(ErrorStateEnum::kNoError));
-    }
-    else
-    {
-        err.Set(to_underlying(ErrorStateEnum::kUnableToCompleteOperation));
-    }
-}
-
-void GenericOperationalStateDelegateImpl::HandleStartStateCallback(GenericOperationalError & err)
-{
-    // placeholder implementation
-    auto error = GetInstance()->SetOperationalState(to_underlying(OperationalStateEnum::kRunning));
-    if (error == CHIP_NO_ERROR)
-    {
-        err.Set(to_underlying(ErrorStateEnum::kNoError));
-    }
-    else
-    {
-        err.Set(to_underlying(ErrorStateEnum::kUnableToCompleteOperation));
-    }
-}
-
-void GenericOperationalStateDelegateImpl::HandleStopStateCallback(GenericOperationalError & err)
-{
-    // placeholder implementation
-    auto error = GetInstance()->SetOperationalState(to_underlying(OperationalStateEnum::kStopped));
-    if (error == CHIP_NO_ERROR)
-    {
-        err.Set(to_underlying(ErrorStateEnum::kNoError));
-    }
-    else
-    {
-        err.Set(to_underlying(ErrorStateEnum::kUnableToCompleteOperation));
-    }
-}
-
-// Init Operational State cluster
-
-static OperationalState::Instance * gOperationalStateInstance = nullptr;
-static OperationalStateDelegate * gOperationalStateDelegate   = nullptr;
-
-void OperationalState::Shutdown()
-{
-    if (gOperationalStateInstance != nullptr)
-    {
-        delete gOperationalStateInstance;
-        gOperationalStateInstance = nullptr;
-    }
-    if (gOperationalStateDelegate != nullptr)
-    {
-        delete gOperationalStateDelegate;
-        gOperationalStateDelegate = nullptr;
-    }
-}
-
-void emberAfOperationalStateClusterInitCallback(chip::EndpointId endpointId)
-{
-    VerifyOrDie(endpointId == 1); // this cluster is only enabled for endpoint 1.
-    VerifyOrDie(gOperationalStateInstance == nullptr && gOperationalStateDelegate == nullptr);
-
-    gOperationalStateDelegate           = new OperationalStateDelegate;
-    EndpointId operationalStateEndpoint = 0x01;
-    gOperationalStateInstance           = new OperationalState::Instance(gOperationalStateDelegate, operationalStateEndpoint);
-
-    gOperationalStateInstance->SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kStopped));
-
-    gOperationalStateInstance->Init();
-}
-
-// Init RVC Operational State cluster
+using chip::Protocols::InteractionModel::Status;
 
 static RvcOperationalState::Instance * gRvcOperationalStateInstance = nullptr;
 static RvcOperationalStateDelegate * gRvcOperationalStateDelegate   = nullptr;
@@ -154,10 +44,10 @@ void RvcOperationalState::Shutdown()
     }
 }
 
-EmberAfStatus chefRvcOperationalStateWriteCallback(chip::EndpointId endpointId, chip::ClusterId clusterId,
+chip::Protocols::InteractionModel::Status chefRvcOperationalStateWriteCallback(chip::EndpointId endpointId, chip::ClusterId clusterId,
                                           const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
 {
-    EmberAfStatus ret = EMBER_ZCL_STATUS_SUCCESS;
+    chip::Protocols::InteractionModel::Status ret = chip::Protocols::InteractionModel::Status::Success;
 
     VerifyOrDie(endpointId == 1); // this cluster is only enabled for endpoint 1.
     VerifyOrDie(gRvcOperationalStateInstance != nullptr);
@@ -174,7 +64,7 @@ EmberAfStatus chefRvcOperationalStateWriteCallback(chip::EndpointId endpointId, 
         {
             break;
         }
-        ret = EMBER_ZCL_STATUS_UNSUPPORTED_WRITE;
+        ret = chip::Protocols::InteractionModel::Status::UnsupportedWrite;
         ChipLogError(DeviceLayer, "Invalid Attribute Update status: %" CHIP_ERROR_FORMAT, err.Format());
     }
     break;
@@ -185,12 +75,12 @@ EmberAfStatus chefRvcOperationalStateWriteCallback(chip::EndpointId endpointId, 
         {
             break;
         }
-        ret = EMBER_ZCL_STATUS_UNSUPPORTED_WRITE;
+        ret = chip::Protocols::InteractionModel::Status::UnsupportedWrite;
         ChipLogError(DeviceLayer, "Invalid Attribute Update status: %" CHIP_ERROR_FORMAT, err.Format());
     }
     break;
     default:
-        ret = EMBER_ZCL_STATUS_UNSUPPORTED_ATTRIBUTE;
+        ret = chip::Protocols::InteractionModel::Status::UnsupportedAttribute;
         ChipLogError(DeviceLayer, "Unsupported Attribute ID: %d", static_cast<int>(attributeId));
         break;
     }
@@ -198,13 +88,12 @@ EmberAfStatus chefRvcOperationalStateWriteCallback(chip::EndpointId endpointId, 
     return ret;
 }
 
-EmberAfStatus chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+chip::Protocols::InteractionModel::Status chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                          const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                          uint16_t maxReadLength)
 {
-    EmberAfStatus ret = EMBER_ZCL_STATUS_SUCCESS;
 
-    return ret;
+    return chip::Protocols::InteractionModel::Status::Success;
 }
 
 void emberAfRvcOperationalStateClusterInitCallback(chip::EndpointId endpointId)
@@ -220,4 +109,4 @@ void emberAfRvcOperationalStateClusterInitCallback(chip::EndpointId endpointId)
 
     gRvcOperationalStateInstance->Init();
 }
-#endif // EMBER_AF_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+#endif // MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
