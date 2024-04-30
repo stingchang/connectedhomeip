@@ -35,6 +35,8 @@ DataModel::Nullable<uint32_t> GenericOperationalStateDelegateImpl::GetCountdownT
 
 CHIP_ERROR GenericOperationalStateDelegateImpl::GetOperationalStateAtIndex(size_t index, GenericOperationalState & operationalState)
 {
+    printf("\033[31;1;4m Inside function `%s`  , at line `%d`, .......  index = %lu, list size = %lu,  \033[0m \n", __func__, __LINE__, index, mOperationalStateList.size());
+
     if (index >= mOperationalStateList.size())
     {
         return CHIP_ERROR_NOT_FOUND;

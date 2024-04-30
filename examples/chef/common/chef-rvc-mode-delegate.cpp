@@ -25,7 +25,6 @@ using chip::Protocols::InteractionModel::Status;
 template <typename T>
 using List              = chip::app::DataModel::List<T>;
 using ModeTagStructType = chip::app::Clusters::detail::Structs::ModeTagStruct::Type;
-using chip::Protocols::InteractionModel::Status;
 
 #ifdef MATTER_DM_PLUGIN_RVC_RUN_MODE_SERVER
 #include <chef-rvc-mode-delegate.h>

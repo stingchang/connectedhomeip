@@ -23,6 +23,7 @@
     defined(MATTER_DM_PLUGIN_RVC_CLEAN_MODE_SERVER)
 #include "chef-rvc-mode-delegate.h"
 #endif
+
 #ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 #include "chef-rvc-operational-state-delegate.h"
 #endif
@@ -64,6 +65,21 @@ Protocols::InteractionModel::Status emberAfExternalAttributeReadCallback(Endpoin
     case chip::app::Clusters::RadonConcentrationMeasurement::Id:
     case chip::app::Clusters::TotalVolatileOrganicCompoundsConcentrationMeasurement::Id:
         return chefConcentrationMeasurementReadCallback(endpoint, clusterId, attributeMetadata, buffer, maxReadLength);
+#endif
+#ifdef MATTER_DM_PLUGIN_RVC_RUN_MODE_SERVER
+    case chip::app::Clusters::RvcRunMode::Id:
+        return chefRvcRunModeReadCallback(endpoint, clusterId, attributeMetadata, buffer, maxReadLength);
+        break;
+#endif
+#ifdef MATTER_DM_PLUGIN_RVC_CLEAN_MODE_SERVER
+    case chip::app::Clusters::RvcCleanMode::Id:
+        return chefRvcCleanModeReadCallback(endpoint, clusterId, attributeMetadata, buffer, maxReadLength);
+        break;
+#endif
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
+    case chip::app::Clusters::RvcOperationalState::Id:
+        return chefRvcOperationalStateReadCallback(endpoint, clusterId, attributeMetadata, buffer, maxReadLength);
+        break;
 #endif
     default:
         break;
@@ -125,6 +141,7 @@ Protocols::InteractionModel::Status emberAfExternalAttributeWriteCallback(Endpoi
 #endif
 #ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
     case chip::app::Clusters::RvcOperationalState::Id:
+//  printf("\033[41m %s  .......   wrtie  ......, %d, \033[0m \n", __func__, __LINE__);
         return chefRvcOperationalStateWriteCallback(endpoint, clusterId, attributeMetadata, buffer);
         break;
 #endif

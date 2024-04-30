@@ -91,19 +91,22 @@ CHIP_ERROR Instance::SetOperationalState(uint8_t aOpState)
     // Error is only allowed to be set by OnOperationalErrorDetected.
     if (aOpState == to_underlying(OperationalStateEnum::kError) || !IsSupportedOperationalState(aOpState))
     {
+        printf("\033[41m %s  .......  testing 1  ......, %d, \033[0m \n", __func__, __LINE__);    
         return CHIP_ERROR_INVALID_ARGUMENT;
     }
 
     if (mOperationalError.errorStateID != to_underlying(ErrorStateEnum::kNoError))
     {
+        printf("\033[41m %s  .......  testing 2  ......, %d, \033[0m \n", __func__, __LINE__);
         mOperationalError.Set(to_underlying(ErrorStateEnum::kNoError));
         MatterReportingAttributeChangeCallback(mEndpointId, mClusterId, Attributes::OperationalError::Id);
     }
-
+printf("\033[41m %s  .......  testing 3  ......, %d, \033[0m \n", __func__, __LINE__);
     uint8_t oldState  = mOperationalState;
     mOperationalState = aOpState;
     if (mOperationalState != oldState)
     {
+        printf("\033[41m %s  .......  testing 4  ......, %d, \033[0m \n", __func__, __LINE__);
         MatterReportingAttributeChangeCallback(mEndpointId, mClusterId, Attributes::OperationalState::Id);
     }
     return CHIP_NO_ERROR;
@@ -192,6 +195,7 @@ bool Instance::IsSupportedPhase(uint8_t aPhase)
 
 bool Instance::IsSupportedOperationalState(uint8_t aState)
 {
+printf("\033[31;1;4m Inside function `%s`  , at line `%d`, .......  trying to update state to %d,  \033[0m \n", __func__, __LINE__, aState);
     GenericOperationalState opState;
     for (uint8_t i = 0; mDelegate->GetOperationalStateAtIndex(i, opState) != CHIP_ERROR_NOT_FOUND; i++)
     {
@@ -200,6 +204,7 @@ bool Instance::IsSupportedOperationalState(uint8_t aState)
             return true;
         }
     }
+     printf("\033[41m %s  .......   (opState.operationalStateID == aState) is false  ......, %d, \033[0m \n", __func__, __LINE__);
     ChipLogDetail(Zcl, "Cannot find an operational state with value %u", aState);
     return false;
 }

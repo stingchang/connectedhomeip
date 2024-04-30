@@ -16,8 +16,6 @@
  */
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/util/config.h>
-
-#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 #include <chef-rvc-operational-state-delegate.h>
 
 using namespace chip;
@@ -27,6 +25,7 @@ using namespace chip::app::Clusters::OperationalState;
 using namespace chip::app::Clusters::RvcOperationalState;
 using chip::Protocols::InteractionModel::Status;
 
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 static RvcOperationalState::Instance * gRvcOperationalStateInstance = nullptr;
 static RvcOperationalStateDelegate * gRvcOperationalStateDelegate   = nullptr;
 
@@ -48,18 +47,18 @@ chip::Protocols::InteractionModel::Status chefRvcOperationalStateWriteCallback(c
                                           const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
 {
     chip::Protocols::InteractionModel::Status ret = chip::Protocols::InteractionModel::Status::Success;
-
+// printf("\033[41m %s  .......   before verify  ......, %d, \033[0m \n", __func__, __LINE__);
     VerifyOrDie(endpointId == 1); // this cluster is only enabled for endpoint 1.
     VerifyOrDie(gRvcOperationalStateInstance != nullptr);
-
+//  printf("\033[41m %s  .......   after verify  ......, %d, \033[0m \n", __func__, __LINE__);
     chip::AttributeId attributeId    = attributeMetadata->attributeId;
 
     switch (attributeId)
     {
     case chip::app::Clusters::RvcOperationalState::Attributes::CurrentPhase::Id: {
         uint8_t m                           = static_cast<uint8_t>(buffer[0]);
-	DataModel::Nullable<uint8_t> aPhase(m);
-        CHIP_ERROR err = gRvcOperationalStateInstance->SetCurrentPhase(aPhase);
+	    DataModel::Nullable<uint8_t> aPhase(m);
+        CHIP_ERROR err = gRvcOperationalStateInstance->SetCurrentPhase(aPhase);     
         if (CHIP_NO_ERROR == err)
         {
             break;
@@ -70,6 +69,7 @@ chip::Protocols::InteractionModel::Status chefRvcOperationalStateWriteCallback(c
     break;
     case chip::app::Clusters::RvcOperationalState::Attributes::OperationalState::Id: {
         uint8_t m                           = static_cast<uint8_t>(buffer[0]);
+        printf("\033[41m %s , %d, endpointId=%d, clusterId=%d \033[0m \n", __func__, __LINE__, endpointId, clusterId);   
         CHIP_ERROR err = gRvcOperationalStateInstance->SetOperationalState(m);
         if (CHIP_NO_ERROR == err)
         {
@@ -88,11 +88,11 @@ chip::Protocols::InteractionModel::Status chefRvcOperationalStateWriteCallback(c
     return ret;
 }
 
-chip::Protocols::InteractionModel::Status chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
+chip::Protocols::InteractionModel::Status 
+chefRvcOperationalStateReadCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                          const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                          uint16_t maxReadLength)
 {
-
     return chip::Protocols::InteractionModel::Status::Success;
 }
 
@@ -100,8 +100,7 @@ void emberAfRvcOperationalStateClusterInitCallback(chip::EndpointId endpointId)
 {
     VerifyOrDie(endpointId == 1); // this cluster is only enabled for endpoint 1.
     VerifyOrDie(gRvcOperationalStateInstance == nullptr && gRvcOperationalStateDelegate == nullptr);
-
-    gRvcOperationalStateDelegate        = new RvcOperationalStateDelegate;
+    gRvcOperationalStateDelegate        = new chip::app::Clusters::RvcOperationalState::RvcOperationalStateDelegate;
     EndpointId operationalStateEndpoint = 0x01;
     gRvcOperationalStateInstance        = new RvcOperationalState::Instance(gRvcOperationalStateDelegate, operationalStateEndpoint);
 
