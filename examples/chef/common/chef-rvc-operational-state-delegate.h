@@ -22,6 +22,7 @@
 #include <app/clusters/operational-state-server/operational-state-server.h>
 #include <protocols/interaction_model/StatusCode.h>
 
+#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 using chip::Protocols::InteractionModel::Status;
 
 namespace chip {
@@ -30,30 +31,90 @@ namespace Clusters {
 
 namespace RvcOperationalState {
 
-// This is an application level delegate to handle operational state commands according to the specific business logic.
-class RvcOperationalStateDelegate : public chip::app::Clusters::RvcOperationalState::Delegate
-{
-private:
-    const OperationalState::OperationalStateEnum rvcOpStateList[7] = {
-        OperationalState::OperationalStateEnum(to_underlying(OperationalState::OperationalStateEnum::kStopped)),
-        OperationalState::OperationalStateEnum(to_underlying(OperationalState::OperationalStateEnum::kRunning)),
-        OperationalState::OperationalStateEnum(to_underlying(OperationalState::OperationalStateEnum::kPaused)),
-        OperationalState::OperationalStateEnum(to_underlying(OperationalState::OperationalStateEnum::kError)),
-        OperationalState::OperationalStateEnum(
-            to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kSeekingCharger)),
-        OperationalState::OperationalStateEnum(to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kCharging)),
-        OperationalState::OperationalStateEnum(to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kDocked)),
-    };
 
+// This is an application level delegate to handle operational state commands according to the specific business logic.
+class RvcOperationalStateDelegate : public RvcOperationalState::Delegate
+{
 public:
+
     RvcOperationalStateDelegate()
     {
-        mOperationalStateList = Span<const OperationalState::OperationalStateEnum>(rvcOpStateList);
+        mOperationalStateList = Span<const OperationalState::GenericOperationalState>(rvcOpStateList);
     }
 
-protected:
-    Span<const OperationalState::OperationalStateEnum> mOperationalStateList;
+    /**
+     * Get the countdown time. This attribute is not used in this application.
+     * @return The current countdown time.
+     */
+    app::DataModel::Nullable<uint32_t> GetCountdownTime() override;
+
+   /**
+     * Fills in the provided GenericOperationalState with the state at index `index` if there is one,
+     * or returns CHIP_ERROR_NOT_FOUND if the index is out of range for the list of states.
+     * Note: This is used by the SDK to populate the operational state list attribute. If the contents of this list changes,
+     * the device SHALL call the Instance's ReportOperationalStateListChange method to report that this attribute has changed.
+     * @param index The index of the state, with 0 representing the first state.
+     * @param operationalState  The GenericOperationalState is filled.
+     */
+    CHIP_ERROR GetOperationalStateAtIndex(size_t index, OperationalState::GenericOperationalState & operationalState) override;
+
+    /**
+     * Fills in the provided MutableCharSpan with the phase at index `index` if there is one,
+     * or returns CHIP_ERROR_NOT_FOUND if the index is out of range for the list of phases.
+     *
+     * If CHIP_ERROR_NOT_FOUND is returned for index 0, that indicates that the PhaseList attribute is null
+     * (there are no phases defined at all).
+     *
+     * Note: This is used by the SDK to populate the phase list attribute. If the contents of this list changes, the
+     * device SHALL call the Instance's ReportPhaseListChange method to report that this attribute has changed.
+     * @param index The index of the phase, with 0 representing the first phase.
+     * @param operationalPhase  The MutableCharSpan is filled.
+     */
+    CHIP_ERROR GetOperationalPhaseAtIndex(size_t index, MutableCharSpan & operationalPhase) override;
+
+    // command callback
+    /**
+     * Handle Command Callback in application: Pause
+     * @param[out] get operational error after callback.
+     */
+    void HandlePauseStateCallback(OperationalState::GenericOperationalError & err) override;
+
+    /**
+     * Handle Command Callback in application: Resume
+     * @param[out] get operational error after callback.
+     */
+    void HandleResumeStateCallback(OperationalState::GenericOperationalError & err) override;
+
+    /**
+     * Handle Command Callback in application: Start
+     * @param[out] get operational error after callback.
+     */
+    void HandleStartStateCallback(OperationalState::GenericOperationalError & err) override;
+
+    /**
+     * Handle Command Callback in application: Stop
+     * @param[out] get operational error after callback.
+     */
+    void HandleStopStateCallback(OperationalState::GenericOperationalError & err) override;
+
+    uint32_t mRunningTime = 0;
+    uint32_t mPausedTime  = 0;
+    app::DataModel::Nullable<uint32_t> mCountDownTime;
+
+private:
+    Span<const OperationalState::GenericOperationalState> mOperationalStateList;
     Span<const CharSpan> mOperationalPhaseList;
+
+    const OperationalState::GenericOperationalState rvcOpStateList[7] = {
+        OperationalState::GenericOperationalState(to_underlying(OperationalState::OperationalStateEnum::kStopped)),
+        OperationalState::GenericOperationalState(to_underlying(OperationalState::OperationalStateEnum::kRunning)),
+        OperationalState::GenericOperationalState(to_underlying(OperationalState::OperationalStateEnum::kPaused)),
+        OperationalState::GenericOperationalState(to_underlying(OperationalState::OperationalStateEnum::kError)),
+        OperationalState::GenericOperationalState(
+            to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kSeekingCharger)),
+        OperationalState::GenericOperationalState(to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kCharging)),
+        OperationalState::GenericOperationalState(to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kDocked)),
+    };
 
 };
 
@@ -64,8 +125,6 @@ void Shutdown();
 } // namespace app
 } // namespace chip
 
-
-#ifdef MATTER_DM_PLUGIN_RVC_OPERATIONAL_STATE_SERVER
 chip::Protocols::InteractionModel::Status 
 chefRvcOperationalStateWriteCallback(chip::EndpointId endpoint, chip::ClusterId clusterId,
                                           const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
